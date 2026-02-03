@@ -18,7 +18,7 @@ interface FilesLibraryProps {
   onSelectAll?: (selected: boolean) => void;
 }
 
-export function FilesLibrary({ files, selectedFiles, onUpload, onDeleteFile, onSelectFile, onSelectAll }: FilesLibraryProps) {
+export const FilesLibrary = ({ files, selectedFiles, onUpload, onDeleteFile, onSelectFile, onSelectAll }: FilesLibraryProps) => {
   const allSelected = files.length > 0 && files.every((f) => selectedFiles.has(f.id));
   const someSelected = files.some((f) => selectedFiles.has(f.id));
   const selectedCount = selectedFiles.size;

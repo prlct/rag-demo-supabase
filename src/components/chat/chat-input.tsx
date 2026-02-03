@@ -1,42 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import type { ChangeEvent } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ChatInputProps {
-  onSend?: (message: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit?: () => void;
   disabled?: boolean;
   placeholder?: string;
 }
 
-export function ChatInput({
-  onSend,
+export const ChatInput = ({
+  value,
+  onChange,
+  onSubmit,
   disabled = false,
   placeholder = "Ask a question about your documents...",
-}: ChatInputProps) {
-  const [message, setMessage] = useState("");
-
-  const handleSubmit = () => {
-    if (message.trim() && onSend) {
-      onSend(message.trim());
-      setMessage("");
-    }
-  };
-
+}: ChatInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      onSubmit?.();
     }
   };
 
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+  };
+
   return (
-    <div className="flex gap-2 p-4 border-t bg-background">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit?.();
+      }}
+      className="flex gap-2 p-4 border-t bg-background"
+    >
       <Textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        value={value}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
@@ -45,13 +50,13 @@ export function ChatInput({
       />
 
       <Button
-        onClick={handleSubmit}
-        disabled={disabled || !message.trim()}
+        type="submit"
+        disabled={disabled || !value.trim()}
         size="icon"
         className="h-[44px] w-[44px] flex-shrink-0"
       >
         <Send className="w-4 h-4" />
       </Button>
-    </div>
+    </form>
   );
 }

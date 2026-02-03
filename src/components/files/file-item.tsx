@@ -22,7 +22,7 @@ export interface FileItemProps {
   onSelect?: (id: string, selected: boolean) => void;
 }
 
-export function FileItem({
+export const FileItem = ({
   id,
   name,
   size,
@@ -30,7 +30,7 @@ export function FileItem({
   selected = false,
   onDelete,
   onSelect,
-}: FileItemProps) {
+}: FileItemProps) => {
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group overflow-hidden">
       <Checkbox

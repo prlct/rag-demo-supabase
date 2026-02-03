@@ -4,16 +4,19 @@ import { MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ChatMessage, ChatMessageProps } from "./chat-message";
+import type { UIMessage } from "ai";
+import { ChatMessage } from "./chat-message";
 import { ChatInput } from "./chat-input";
 
 interface ChatBoxProps {
-  messages: ChatMessageProps[];
-  onSendMessage?: (message: string) => void;
+  messages: UIMessage[];
+  input: string;
+  onInputChange: (value: string) => void;
+  onSubmit: () => void;
   isLoading?: boolean;
 }
 
-export function ChatBox({ messages, onSendMessage, isLoading }: ChatBoxProps) {
+export const ChatBox = ({ messages, input, onInputChange, onSubmit, isLoading }: ChatBoxProps) => {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex-shrink-0 pb-3">
@@ -47,14 +50,19 @@ export function ChatBox({ messages, onSendMessage, isLoading }: ChatBoxProps) {
               </div>
             ) : (
               messages.map((message) => (
-                <ChatMessage key={message.id} {...message} />
+                <ChatMessage key={message.id} message={message} />
               ))
             )}
           </div>
         </ScrollArea>
       </CardContent>
 
-      <ChatInput onSend={onSendMessage} disabled={isLoading} />
+      <ChatInput
+        value={input}
+        onChange={onInputChange}
+        onSubmit={onSubmit}
+        disabled={isLoading}
+      />
     </Card>
   );
 }

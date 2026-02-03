@@ -1,18 +1,20 @@
 "use client";
 
+import type { UIMessage } from "ai";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bot, User } from "lucide-react";
 
-export interface ChatMessageProps {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-}
+const getMessageText = (message: UIMessage): string => {
+  return message.parts
+    .filter((part): part is { type: "text"; text: string } => part.type === "text")
+    .map((part) => part.text)
+    .join("");
+};
 
-export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
-  const isUser = role === "user";
+export const ChatMessage = ({ message }: { message: UIMessage }) => {
+  const isUser = message.role === "user";
+  const content = getMessageText(message);
 
   return (
     <div
@@ -40,11 +42,11 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
           <span className="text-sm font-medium">
             {isUser ? "You" : "Assistant"}
           </span>
-
-          <span className="text-xs text-muted-foreground">{timestamp}</span>
         </div>
-        
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+          {content}
+        </p>
       </div>
     </div>
   );
