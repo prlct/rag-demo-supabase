@@ -14,7 +14,6 @@ import {
 export interface FileItemProps {
   id: string;
   name: string;
-  size: string;
   uploadedAt: string;
   status: "processing" | "ready" | "error";
   selected?: boolean;
@@ -25,7 +24,6 @@ export interface FileItemProps {
 export const FileItem = ({
   id,
   name,
-  size,
   status,
   selected = false,
   onDelete,
@@ -57,10 +55,6 @@ export const FileItem = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{size}</span>
-        </div>
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">

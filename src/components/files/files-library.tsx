@@ -1,6 +1,7 @@
 "use client";
 
-import { Upload, FolderOpen } from "lucide-react";
+import { useRef, useState } from "react";
+import { Upload, FolderOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,16 +13,48 @@ import { FileItem, FileItemProps } from "./file-item";
 interface FilesLibraryProps {
   files: FileItemProps[];
   selectedFiles: Set<string>;
-  onUpload?: () => void;
+  isLoading?: boolean;
+  onUpload?: (file: File) => Promise<void>;
   onDeleteFile?: (id: string) => void;
   onSelectFile?: (id: string, selected: boolean) => void;
   onSelectAll?: (selected: boolean) => void;
 }
 
-export const FilesLibrary = ({ files, selectedFiles, onUpload, onDeleteFile, onSelectFile, onSelectAll }: FilesLibraryProps) => {
+export const FilesLibrary = ({ 
+  files, 
+  selectedFiles, 
+  onUpload, 
+  onDeleteFile, 
+  onSelectFile, 
+  onSelectAll 
+}: FilesLibraryProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
   const allSelected = files.length > 0 && files.every((f) => selectedFiles.has(f.id));
   const someSelected = files.some((f) => selectedFiles.has(f.id));
   const selectedCount = selectedFiles.size;
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onUpload) return;
+
+    setIsUploading(true);
+    try {
+      await onUpload(file);
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   return (
     <Card className="h-full flex flex-col overflow-hidden">
@@ -32,14 +65,30 @@ export const FilesLibrary = ({ files, selectedFiles, onUpload, onDeleteFile, onS
             <CardTitle className="text-lg">Files Library</CardTitle>
           </div>
 
-          <Button size="sm" onClick={onUpload} className="gap-2">
-            <Upload className="w-4 h-4" />
-            Upload
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <Button 
+            size="sm" 
+            onClick={handleUploadClick} 
+            disabled={isUploading}
+            className="gap-2"
+          >
+            {isUploading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4" />
+            )}
+            {isUploading ? "Uploading..." : "Upload"}
           </Button>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Upload documents to use as context for your conversations
+          Upload PDF or DOCX documents to use as context
         </p>
       </CardHeader>
 
@@ -81,7 +130,7 @@ export const FilesLibrary = ({ files, selectedFiles, onUpload, onDeleteFile, onS
                 <p className="text-sm font-medium">No files uploaded</p>
                 
                 <p className="text-xs text-muted-foreground mt-1">
-                  Upload PDF, TXT, or MD files to get started
+                  Upload PDF or DOCX files to get started
                 </p>
               </div>
             ) : (
