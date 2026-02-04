@@ -23,7 +23,8 @@ interface FilesLibraryProps {
 
 export const FilesLibrary = ({ 
   files, 
-  selectedFiles, 
+  selectedFiles,
+  isLoading = false, 
   onUpload, 
   onDeleteFile, 
   onSelectFile, 
@@ -127,7 +128,13 @@ export const FilesLibrary = ({
       <CardContent className="flex-1 overflow-hidden p-0">
         <ScrollArea className="h-full w-full">
           <div className="p-4 space-y-2 w-full max-w-full">
-            {files.length === 0 ? (
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                
+                <p className="text-sm text-muted-foreground mt-2">Loading files...</p>
+              </div>
+            ) : files.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                   <FolderOpen className="w-8 h-8 text-muted-foreground" />

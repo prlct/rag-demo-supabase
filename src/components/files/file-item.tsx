@@ -10,12 +10,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { FILE_STATUS, type FileStatus } from "@/lib/types";
 
 export interface FileItemProps {
   id: string;
   name: string;
   uploadedAt: string;
-  status: "processing" | "ready" | "error";
+  status: FileStatus;
   selected?: boolean;
   onDelete?: (id: string) => void;
   onSelect?: (id: string, selected: boolean) => void;
@@ -58,19 +59,19 @@ export const FileItem = ({
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        {status === "ready" && (
+        {status === FILE_STATUS.READY && (
           <Badge className="text-xs flex-shrink-0 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 border-0">
             Ready
           </Badge>
         )}
 
-        {status === "processing" && (
+        {status === FILE_STATUS.PROCESSING && (
           <Badge variant="secondary" className="text-xs flex-shrink-0 animate-pulse">
             Processing
           </Badge>
         )}
 
-        {status === "error" && (
+        {status === FILE_STATUS.ERROR && (
           <Badge variant="destructive" className="text-xs flex-shrink-0">
             Error
           </Badge>

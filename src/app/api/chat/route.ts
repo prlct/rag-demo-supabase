@@ -2,6 +2,7 @@ import { streamText, createUIMessageStreamResponse } from "ai";
 import { google } from "@ai-sdk/google";
 import { createClient } from "@/lib/supabase/server";
 import { getEmbedding } from "@/lib/services/embeddings";
+import { extractTextFromParts } from "@/lib/types";
 
 export async function POST(req: Request) {
   const { messages, selectedFileIds } = await req.json();
@@ -18,15 +19,9 @@ export async function POST(req: Request) {
   if (typeof lastUserMessage.content === "string") {
     userQuestion = lastUserMessage.content;
   } else if (Array.isArray(lastUserMessage.parts)) {
-    userQuestion = lastUserMessage.parts
-      .filter((part: { type: string }) => part.type === "text")
-      .map((part: { text: string }) => part.text)
-      .join(" ");
+    userQuestion = extractTextFromParts(lastUserMessage.parts);
   } else if (Array.isArray(lastUserMessage.content)) {
-    userQuestion = lastUserMessage.content
-      .filter((part: { type: string }) => part.type === "text")
-      .map((part: { text: string }) => part.text)
-      .join(" ");
+    userQuestion = extractTextFromParts(lastUserMessage.content);
   }
 
   const queryEmbedding = await getEmbedding(userQuestion);

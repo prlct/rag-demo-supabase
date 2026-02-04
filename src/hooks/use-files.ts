@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import type { FileStatus } from "@/lib/types";
 
 export interface FileData {
   id: string;
   name: string;
   uploadedAt: string;
-  status: "processing" | "ready" | "error";
+  status: FileStatus;
 }
 
 interface UseFilesReturn {
@@ -35,7 +36,7 @@ export const useFiles = (): UseFilesReturn => {
           id: f.id,
           name: f.original_name,
           uploadedAt: f.uploaded_at,
-          status: f.status as "processing" | "ready" | "error",
+          status: f.status as FileStatus,
         }))
       );
       setError(null);

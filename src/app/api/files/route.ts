@@ -5,6 +5,7 @@ import { parseDocument } from "@/lib/services/parser";
 import { chunkText } from "@/lib/services/chunking";
 import { getEmbeddings } from "@/lib/services/embeddings";
 import { createClient } from "@/lib/supabase/server";
+import { FILE_STATUS } from "@/lib/types";
 
 export async function POST(req: Request) {
   try {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
       .insert({
         id: fileId,
         original_name: file.name,
-        status: "processing",
+        status: FILE_STATUS.PROCESSING,
         uploaded_at: new Date().toISOString(),
       });
 
@@ -77,14 +78,14 @@ export async function POST(req: Request) {
 
     await supabase
       .from("files")
-      .update({ status: "ready" })
+      .update({ status: FILE_STATUS.READY })
       .eq("id", fileId);
 
     return NextResponse.json({
       id: fileId,
       name: file.name,
       chunksCount: chunks.length,
-      status: "ready",
+      status: FILE_STATUS.READY,
     });
   } catch (error) {
     console.error("Upload error:", error);

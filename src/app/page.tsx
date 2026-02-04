@@ -52,13 +52,25 @@ export default function Home() {
   };
 
   const handleDeleteFile = async (id: string) => {
-    await deleteFile(id);
+    const fileName = files.find((f) => f.id === id)?.name;
     
-    setSelectedFiles((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
+    try {
+      await deleteFile(id);
+      
+      setSelectedFiles((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+
+      toast.success("File deleted", {
+        description: `${fileName || "File"} has been deleted successfully`,
+      });
+    } catch (err) {
+      toast.error("Delete failed", {
+        description: err instanceof Error ? err.message : "Failed to delete file",
+      });
+    }
   };
 
   const handleSelectFile = (id: string, selected: boolean) => {
