@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getFileStorage, getFileType, SUPPORTED_MIME_TYPES } from "@/lib/services/file-storage";
 import { parseDocument } from "@/lib/services/parser";
 import { chunkText } from "@/lib/services/chunking";
+import { getEmbeddings } from "@/lib/services/embeddings";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const storage = getFileStorage();
-    await storage.save(fileId, buffer, file.name);
+    const filePath = await storage.save(fileId, buffer, file.name);
 
     const supabase = await createClient();
     const { error: insertError } = await supabase
@@ -49,20 +50,23 @@ export async function POST(req: Request) {
       throw insertError;
     }
 
-    const text = await parseDocument(buffer, fileType);
+    const text = await parseDocument(filePath, fileType);
 
     const chunks = chunkText(text);
+
+    const chunkTexts = chunks.map((c) => c.text);
+    const embeddings = await getEmbeddings(chunkTexts);
 
     if (chunks.length > 0) {
       const { error: chunksError } = await supabase
         .from("chunks")
         .insert(
-          chunks.map((chunk) => ({
+          chunks.map((chunk, index) => ({
             id: uuidv4(),
             file_id: fileId,
             chunk_index: chunk.index,
             text: chunk.text,
-            // embedding will be added later
+            embedding: embeddings[index],
           }))
         );
 
