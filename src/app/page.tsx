@@ -3,13 +3,10 @@
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { toast } from "sonner";
 import { FilesLibrary } from "@/components/files/files-library";
 import { ChatBox } from "@/components/chat/chat-box";
 import { useFiles } from "@/hooks/use-files";
-
-const chatTransport = new DefaultChatTransport({
-  api: "/api/chat",
-});
 
 export default function Home() {
   const { files, isLoading: isFilesLoading, uploadFile, deleteFile } = useFiles();
@@ -17,16 +14,41 @@ export default function Home() {
   const [input, setInput] = useState("");
 
   const { messages, sendMessage, status } = useChat({
-    transport: chatTransport,
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
+    onError: (err) => {
+      toast.error("Chat Error", {
+        description: err.message || "Something went wrong",
+      });
+    },
   });
 
   const isChatLoading = status === "streaming" || status === "submitted";
 
   const handleSubmit = async () => {
     if (!input.trim() || isChatLoading) return;
+    
+    if (selectedFiles.size === 0) {
+      toast.warning("No files selected", {
+        description: "Please select at least one file to search in.",
+      });
+      return;
+    }
+    
     const text = input;
     setInput("");
-    await sendMessage({ text });
+    
+    try {
+      await sendMessage(
+        { text },
+        { body: { selectedFileIds: Array.from(selectedFiles) } }
+      );
+    } catch (err) {
+      toast.error("Failed to send message", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
   };
 
   const handleDeleteFile = async (id: string) => {

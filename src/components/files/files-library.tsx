@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, FolderOpen, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -46,8 +47,13 @@ export const FilesLibrary = ({
     setIsUploading(true);
     try {
       await onUpload(file);
+      toast.success("File uploaded", {
+        description: `${file.name} uploaded successfully`,
+      });
     } catch (error) {
-      console.error("Upload failed:", error);
+      toast.error("Upload failed", {
+        description: error instanceof Error ? error.message : "Failed to upload file",
+      });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
