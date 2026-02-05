@@ -1,36 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI-Powered Document Chat Application
+
+A RAG (Retrieval Augmented Generation) system that enables intelligent conversations with documents. Upload PDF and DOCX files, ask questions and get accurate answers based solely on your document content.
+
+## 🎯 Key Features
+
+- **Document Upload & Processing**: Automatic extraction and processing of PDF and DOCX files
+- **Semantic Search**: Vector-based search using embeddings to find relevant information by meaning, not just keywords
+- **RAG Implementation**: Retrieval Augmented Generation ensures answers are based only on uploaded documents
+- **Multi-file Support**: Select and search across multiple documents simultaneously
+- **Transparent Responses**: System explicitly states when information isn't available in documents
+- **Real-time UI**: Toast notifications and loading states for better UX
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS v4, shadcn/ui
+- **AI/ML**:
+  - Google Gemini API (`gemini-2.5-flash`) for content generation
+  - Gemini Embeddings (`text-embedding-004`) for vector embeddings (768 dimensions)
+  - Vercel AI SDK v6 for streaming and chat management
+- **Database**: Supabase with pgvector extension for vector storage and search
+- **File Processing**:
+  - `unpdf` for PDF text extraction
+  - `mammoth` for DOCX text extraction
+- **Storage**: Local file storage (with abstraction for future cloud migration)
+
+## 🔄 How It Works
+
+### 1. Document Upload & Processing
+
+1. **File Upload**: User uploads PDF or DOCX file
+2. **Raw Storage**: File saved to local storage with UUID-based naming
+3. **Text Extraction**:
+   - PDF: Extracted using `unpdf`
+   - DOCX: Extracted using `mammoth`
+4. **Chunking**: Text split into ~500 character chunks with ~50 character overlap
+5. **Embedding**: Each chunk converted to vector embeddings using Gemini Embeddings API
+6. **Storage**:
+   - Raw files stored locally in `/uploads`
+   - Chunks stored in Supabase `chunks` table with embeddings
+   - File metadata stored in Supabase `files` table
+7. **Status Updates**: File status updates (`processing` → `ready`/`error`)
+
+### 2. Query Processing (RAG Flow)
+
+1. **File Selection**: User selects files via checkboxes
+2. **Query Embedding**: User's question converted to embedding vector
+3. **Vector Search**: Supabase `match_chunks` RPC finds top 5 most relevant chunks from selected files
+4. **Context Injection**: Relevant chunks injected into prompt as context
+5. **Response Generation**: Gemini model generates answer using the provided context
+6. **Transparency**: If information isn't available, system explicitly states so
+
+### 3. Vector Search Implementation
+
+- **Index**: Supabase pgvector index on `embedding` field using IVFFlat
+- **Search Method**: Semantic similarity using cosine distance (`<=>` operator)
+- **Filtering**: Results filtered by selected `file_ids`
+- **Threshold**: Minimum similarity score of 0.5
+
+## Prerequisites
+
+- Node.js 20+
+- npm or pnpm
+- Supabase account with pgvector extension enabled
+- Google AI API key
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone and Install
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```sh
+git clone <repository-url>
+cd rag-demo-supabase
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy the example environment file and fill in your credentials:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+cp .env.example .env.local
+```
 
-## Learn More
+Required environment variables:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Database Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run the SQL schema in your Supabase SQL Editor:
 
-## Deploy on Vercel
+```sh
+# See supabase/schema.sql for the complete schema
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This creates:
+- `files` table for document metadata
+- `chunks` table with vector embeddings
+- `match_chunks` function for vector similarity search
+- Required indexes for performance
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Run Development Server
+
+```sh
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to use the application.
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── chat/route.ts      # RAG chat endpoint
+│   │   └── files/             # File upload/delete endpoints
+│   ├── layout.tsx
+│   └── page.tsx               # Main chat interface
+├── components/
+│   ├── chat/                  # Chat UI components
+│   ├── files/                 # File library components
+│   └── ui/                    # shadcn/ui components
+├── hooks/
+│   └── use-files.ts           # Files state management
+└── lib/
+    ├── services/
+    │   ├── chunking/          # Text chunking logic
+    │   ├── embeddings/        # Gemini embeddings
+    │   ├── file-storage/      # Local file storage
+    │   └── parser/            # PDF/DOCX parsing
+    ├── supabase/              # Supabase client
+    └── types.ts               # Shared types
+```
+
+## License
+
+MIT
