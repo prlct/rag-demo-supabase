@@ -69,3 +69,11 @@ begin
   limit match_count;
 end;
 $$;
+
+-- Create storage bucket for documents
+insert into storage.buckets (id, name, public)
+values ('documents', 'documents', false)
+on conflict (id) do nothing;
+
+-- Enable RLS on storage.objects
+alter table storage.objects enable row level security;

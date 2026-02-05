@@ -24,21 +24,21 @@ A RAG (Retrieval Augmented Generation) system that enables intelligent conversat
 - **File Processing**:
   - `unpdf` for PDF text extraction
   - `mammoth` for DOCX text extraction
-- **Storage**: Local file storage (with abstraction for future cloud migration)
+- **Storage**: Supabase Storage for file uploads (with local storage fallback)
 
 ## 🔄 How It Works
 
 ### 1. Document Upload & Processing
 
 1. **File Upload**: User uploads PDF or DOCX file
-2. **Raw Storage**: File saved to local storage with UUID-based naming
+2. **Raw Storage**: File saved to Supabase Storage bucket
 3. **Text Extraction**:
    - PDF: Extracted using `unpdf`
    - DOCX: Extracted using `mammoth`
 4. **Chunking**: Text split into ~500 character chunks with ~50 character overlap
 5. **Embedding**: Each chunk converted to vector embeddings using Gemini Embeddings API
 6. **Storage**:
-   - Raw files stored locally in `/uploads`
+   - Raw files stored in Supabase Storage (`documents` bucket)
    - Chunks stored in Supabase `chunks` table with embeddings
    - File metadata stored in Supabase `files` table
 7. **Status Updates**: File status updates (`processing` → `ready`/`error`)

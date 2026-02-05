@@ -1,11 +1,9 @@
 import mammoth from "mammoth";
 import { extractText } from "unpdf";
-import fs from "fs/promises";
 import { SupportedFileType } from "../file-storage/types";
 
-const parsePdf = async (filePath: string): Promise<string> => {
+const parsePdf = async (buffer: Buffer): Promise<string> => {
   try {
-    const buffer = await fs.readFile(filePath);
     const uint8Array = new Uint8Array(buffer);
     const { text } = await extractText(uint8Array);
 
@@ -17,9 +15,9 @@ const parsePdf = async (filePath: string): Promise<string> => {
   }
 };
 
-const parseDocx = async (filePath: string): Promise<string> => {
+const parseDocx = async (buffer: Buffer): Promise<string> => {
   try {
-    const result = await mammoth.extractRawText({ path: filePath });
+    const result = await mammoth.extractRawText({ buffer });
 
     return result.value || "";
   } catch (error) {
@@ -30,14 +28,14 @@ const parseDocx = async (filePath: string): Promise<string> => {
 };
 
 export const parseDocument = async (
-  filePath: string,
+  buffer: Buffer,
   fileType: SupportedFileType
 ): Promise<string> => {
   switch (fileType) {
     case "pdf":
-      return parsePdf(filePath);
+      return parsePdf(buffer);
     case "docx":
-      return parseDocx(filePath);
+      return parseDocx(buffer);
     default:
       throw new Error(`Unsupported file type: ${fileType}`);
   }
