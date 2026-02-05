@@ -89,20 +89,34 @@ Required environment variables:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key
 ```
 
+> **Note**: `SUPABASE_SERVICE_ROLE_KEY` is used on the server-side to bypass RLS. Find it in your Supabase Dashboard → Settings → API → Service Role Key.
+
 ### 3. Database Setup
 
-Run the SQL schema in your Supabase SQL Editor:
+**Option A: Using Supabase CLI (recommended)**
 
 ```sh
-# See supabase/schema.sql for the complete schema
+# Install Supabase CLI if not installed
+npm install -g supabase
+
+# Link to your project
+supabase link --project-ref your-project-ref
+
+# Run migrations
+supabase db push
 ```
 
+**Option B: Manual setup**
+
+Run the SQL from `supabase/migrations/20260205000000_init.sql` in your Supabase SQL Editor.
+
 This creates:
-- `files` table for document metadata
-- `chunks` table with vector embeddings
+- `files` table for document metadata (with RLS enabled)
+- `chunks` table with vector embeddings (with RLS enabled)
 - `match_chunks` function for vector similarity search
 - Required indexes for performance
 
