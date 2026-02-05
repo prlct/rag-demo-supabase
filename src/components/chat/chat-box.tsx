@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +18,12 @@ interface ChatBoxProps {
 }
 
 export const ChatBox = ({ messages, input, onInputChange, onSubmit, isLoading }: ChatBoxProps) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex-shrink-0 pb-3">
@@ -56,10 +63,11 @@ export const ChatBox = ({ messages, input, onInputChange, onSubmit, isLoading }:
                 {isLoading && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    
+
                     <span className="text-sm">Assistant is thinking...</span>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </>
             )}
           </div>
